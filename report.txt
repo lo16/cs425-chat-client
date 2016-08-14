@@ -1,0 +1,24 @@
+Assumptions and design choices:
+We assumed that our servers are synchronized, and that 
+ports 8000 and onward are available.
+Our implementation allows for single-word strings for keys and values.
+We chose to use UDP in this MP, because we thought it would be 
+simpler.
+
+We write our key-value pairs into a file for each replica.
+
+Algorithms and Implementation:
+We decided to use the "last writer wins" consistency repair rule.
+As such, for each key-value pair, we stored a "last modified" timestamp. 
+When a key-value pair gets deleted, we also record the timestamp of 
+this operation. These timestamps represent the times when
+the operation was requested, not when the replica receives and 
+processes the message. The message includes this timestamp.
+
+When a process receives an operation with the timestamp, it will 
+acknowledge that the operation has ended with a message containing
+the original requestor's timestamp, such that we ignore older ACKs.
+
+The insert and update operations are extremely similar considering
+we did not have to handle the situations where we are inserting
+an already existing key, or updating a nonexistent key.
